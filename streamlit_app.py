@@ -2,6 +2,8 @@ import streamlit as st
 from langchain_openai import AzureChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.output_parsers import StrOutputParser
+from langchain_core.globals import set_debug
+set_debug(True)
 
 st.title("💬 Chatbot")  
   
