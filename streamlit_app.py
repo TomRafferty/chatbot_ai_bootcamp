@@ -1,44 +1,57 @@
-import streamlit as st  
-from openai import OpenAI  
-  
+import streamlit as st
+from langchain_openai import AzureChatOpenAI
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import StrOutputParser
+
 st.title("💬 Chatbot")  
-st.write(  
-    "This is a simple chatbot that uses OpenAI's GPT-3.5 model to generate responses. "  
-    "To use this app, you need to provide an OpenAI API key, which you can get [here](https://platform.openai.com/account/api-keys). "  
-    "You can also learn how to build this app step by step by [following our tutorial](https://docs.streamlit.io/develop/tutorials/llms/build-conversational-apps)."  
-)  
   
 openai_api_key = "o2Mwk7oNN90NNgONc2HCTY4sAEPJyBekxSz45Q4aAZVmcnnDdtrBJQQJ99BGACmepeSXJ3w3AAAAACOG0CfP"  
-  
-if not openai_api_key:  
-    st.info("Please add your OpenAI API key to continue.", icon="🗝️")  
-else:  
-    client = OpenAI(api_key=openai_api_key)  
-  
-    if "messages" not in st.session_state:  
-        st.session_state.messages = []  
-  
-    for message in st.session_state.messages:  
-        with st.chat_message(message["role"]):  
-            st.markdown(message["content"])  
-  
-    if prompt := st.chat_input("What is up?"):  
-        st.session_state.messages.append({"role": "user", "content": prompt})  
-        with st.chat_message("user"):  
-            st.markdown(prompt)  
-  
-        stream = client.chat.completions.create(  
-            model="gpt-3.5-turbo",  
-            messages=st.session_state.messages,  
-            stream=True,  
-        )  
-  
-        response_text = ""  
-        with st.chat_message("assistant"):  
-            message_placeholder = st.empty()  
-            for chunk in stream:  
-                chunk_message = chunk.choices[0].delta.get("content", "")  
-                response_text += chunk_message  
-                message_placeholder.markdown(response_text)  
-  
-        st.session_state.messages.append({"role": "assistant", "content": response_text})  
+
+if "chat_history" not in st.session_state:
+    #initialize an empty chat history
+    st.session_state.chat_history = []
+
+for chat_msg in st.session_state.chat_history:
+    #iterrate over the chat history and display each message using .chat_message
+    st.chat_message(chat_msg["role"]).write(chat_msg["content"])
+
+
+#creates a chat input widget using st.chat_input
+user_input = st.chat_input("Hi there! how can I assist you today?")
+if user_input:
+    #append the new message to the chat history and display it
+    st.session_state.chat_history.append({
+            "role": "user",
+            "content": user_input
+        })
+    st.chat_message("user").write(user_input)
+
+    #initializing AzureChatOpenAI with appropriate params
+    llm = AzureChatOpenAI(  
+        azure_endpoint="https://hmrcmu-ai-training-uk-o-resource.cognitiveservices.azure.com/openai/deployments/gpt-4.1-mini/chat/completions?api-version=2025-01-01-preview",  
+        api_version="2025-01-01-preview",  
+        deployment_name="gpt-4.1-mini",  
+        api_key="o2Mwk7oNN90NNgONc2HCTY4sAEPJyBekxSz45Q4aAZVmcnnDdtrBJQQJ99BGACmepeSXJ3w3AAAAACOG0CfP"  
+    )
+
+    #create a ChatPromptTemplate with system and human messages
+    prompt_template = ChatPromptTemplate.from_messages([
+        ("system", "you are a cringe tiktok influencer who attempts to help but is always completely wrong and unhelpful"),
+        ("human", "{user_message}")        
+    ])  
+
+    #creating the chain for prompt template to llm to StrOutputParser
+    chain = prompt_template | llm | StrOutputParser()
+
+    #invoking the chain with user input to get response
+    response = chain.invoke({
+        "user_message": user_input
+    })
+
+    if response:
+        #append the response to the chat history and display it
+        st.session_state.chat_history.append({
+            "role": "assistant",
+            "content": response
+        })
+        st.chat_message("assistant").write(response)
