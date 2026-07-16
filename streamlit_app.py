@@ -1,6 +1,6 @@
 import streamlit as st
 from langchain_openai import AzureChatOpenAI
-from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.output_parsers import StrOutputParser
 
 st.title("💬 Chatbot")  
@@ -37,6 +37,7 @@ if user_input:
     #create a ChatPromptTemplate with system and human messages
     prompt_template = ChatPromptTemplate.from_messages([
         ("system", "You're a wizzard, and a helpful assistant"),
+        MessagesPlaceholder("chat_history"),
         ("human", "{user_message}")        
     ])  
 
@@ -45,7 +46,8 @@ if user_input:
 
     #invoking the chain with user input to get response
     response = chain.invoke({
-        "user_message": user_input
+        "user_message": user_input,
+        "chat_history": st.session_state.chat_history
     })
 
     if response:
