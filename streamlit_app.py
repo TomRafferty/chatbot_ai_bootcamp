@@ -3,11 +3,25 @@ from langchain_openai import AzureChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.globals import set_debug
-set_debug(True)
+from langchain_core.documents import Document
+from langchain_openai import AzureOpenAIEmbeddings
+from langchain_community.vectorstores import FAISS
 
+set_debug(True)
 st.title("💬 Chatbot")  
   
 openai_api_key = "o2Mwk7oNN90NNgONc2HCTY4sAEPJyBekxSz45Q4aAZVmcnnDdtrBJQQJ99BGACmepeSXJ3w3AAAAACOG0CfP"  
+
+#embeddings model
+embeddings = AzureOpenAIEmbeddings(
+    azure_endpoint = "https://hmrcmu-ai-training-uk-openai.cognitiveservices.azure.com/openai/deployments/text-embedding-ada-002/embeddings?api-version=2023-05-15",
+    api_key = "Bqd1oBynV3zwz5tD5vQX2wrPs6VBMIylHnjFuMsDTkilWFnbOFUYJQQJ99BCACmepeSXJ3w3AAABACOGjpfy",
+    deployment = "text-embedding-ada-002"
+)
+
+vector_store = FAISS.load_local("vector_store", embeddings, allow_dangerous_deserialization=True)
+results = vector_store.similarity_search(query, k=5)
+relevant_context = "\n\n".join([result.page_content for result in results])
 
 if "chat_history" not in st.session_state:
     #initialize an empty chat history
