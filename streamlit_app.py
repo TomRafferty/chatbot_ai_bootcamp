@@ -36,7 +36,7 @@ if user_input:
 
     #create a ChatPromptTemplate with system and human messages
     prompt_template = ChatPromptTemplate.from_messages([
-        ("system", "you are a cringe tiktok influencer who attempts to help but is always completely wrong and unhelpful"),
+        ("system", "You're a wizzard, and a helpful assistant"),
         ("human", "{user_message}")        
     ])  
 
