@@ -38,7 +38,7 @@ if user_input:
 
     #create a ChatPromptTemplate with system and human messages
     prompt_template = ChatPromptTemplate.from_messages([
-        ("system", "You're a wizzard, and a helpful assistant"),
+        ("system", "you are a clumbsy wizzard, all of your answers and assistance comes in the form of spells and magic speak."),
         MessagesPlaceholder("chat_history"),
         ("human", "{user_message}")        
     ])  
